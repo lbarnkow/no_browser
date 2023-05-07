@@ -48,9 +48,9 @@ jobs:
           CARGO_REGISTRY_TOKEN: "${{ secrets.NO_BROWSER_CARGO_TOKEN }}"
         run: |
           sed --in-place "s/version = \"0.0.0\"/version = \"$GITHUB_REF_NAME\"/g" Cargo.toml
-          cargo publish --dry-run
+          cargo publish --dry-run --allow-dirty
           cargo package --list
-          cargo publish
+          cargo publish --allow-dirty
 
       - name: github release
         uses: softprops/action-gh-release@v0.1.15
