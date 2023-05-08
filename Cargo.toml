@@ -8,7 +8,7 @@ license = "MIT OR Apache-2.0"
 description = "a light-weight, head-less 'web browser' based on reqwest"
 keywords = ["web", "testing", "test", "html", "css"]
 categories = ["development-tools::testing", "web-programming", "web-programming::http-client"]
-repository = "https://github.com/seanmonstar/reqwest"
+repository = "https://github.com/lbarnkow/no_browser"
 documentation = "https://docs.rs/no_browser"
 authors = ["Lorenz Barnkow"]
 
