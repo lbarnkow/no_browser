@@ -6,7 +6,7 @@ use crate::{
     page,
 };
 use reqwest::{
-    blocking::{Client, RequestBuilder, Response},
+    blocking::{Client, Response},
     Certificate, Method,
 };
 use thiserror::Error;
@@ -92,15 +92,15 @@ impl Browser {
     pub fn navigate_to(&self, url: &str, query: Option<&Vec<(&str, &str)>>) -> Result<Page> {
         let mut rb = self.client.get(url);
 
-        if query.is_some() {
-            rb = rb.query(query.unwrap());
+        if let Some(query_value) = query {
+            rb = rb.query(query_value)
         }
 
         let resp = rb
             .send()
             .map_err(|error| Error::SendRequestError { source: error })?;
 
-        Ok(Self::build_page(Method::GET, resp)?)
+        Self::build_page(Method::GET, resp)
     }
 
     /// Uses this [`Browser`][Browser] instance to submit a given `form` using a specific input/button
@@ -109,18 +109,17 @@ impl Browser {
     pub fn submit_form(&self, form: &Form, submit_button_name: &str) -> Result<Page> {
         let info = form.submit(submit_button_name)?;
 
-        let rb: RequestBuilder;
-        if info.method == Method::GET {
-            rb = self.client.get(info.url).query(&info.data);
+        let rb = if info.method == Method::GET {
+            self.client.get(info.url).query(&info.data)
         } else {
-            rb = self.client.post(info.url).form(&info.data);
-        }
+            self.client.post(info.url).form(&info.data)
+        };
 
         let resp = rb
             .send()
             .map_err(|error| Error::SendRequestError { source: error })?;
 
-        Ok(Self::build_page(info.method, resp)?)
+        Self::build_page(info.method, resp)
     }
 
     fn build_page(method: Method, resp: Response) -> Result<Page> {

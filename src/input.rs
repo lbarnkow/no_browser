@@ -152,7 +152,7 @@ impl Input {
 
     /// Returns the `value` attribute of this input element.
     pub fn value(&self) -> Option<&str> {
-        self.value.as_ref().map(|s| s.as_str())
+        self.value.as_deref()
     }
 
     /// Sets the `value` attribute of this input element.
@@ -171,11 +171,11 @@ impl Input {
     pub fn set_attr(&mut self, attr: &str, new_value: Option<String>) -> Option<String> {
         let prev;
 
-        if new_value.is_none() {
-            prev = self.attr.remove(attr)
-        } else {
+        if let Some(new_value) = new_value {
             prev = self.attr.remove(attr);
-            self.attr.insert(attr.to_owned(), new_value.unwrap());
+            self.attr.insert(attr.to_owned(), new_value);
+        } else {
+            prev = self.attr.remove(attr)
         }
         prev
     }
@@ -211,11 +211,7 @@ impl Input {
     }
 
     fn parse_button(element: &Element) -> Result<Input> {
-        let t = element
-            .attr("type")
-            .or(Some("submit"))
-            .unwrap()
-            .to_lowercase();
+        let t = element.attr("type").unwrap_or("submit").to_lowercase();
 
         let t = match t.as_str() {
             "submit" => InputType::Submit,
@@ -230,7 +226,7 @@ impl Input {
     fn parse_element(element: &Element, t: InputType) -> Result<Input> {
         let name = element
             .attr("name")
-            .ok_or_else(|| Error::UnnamedInputError {})?
+            .ok_or(Error::UnnamedInputError {})?
             .to_owned();
         let value = element.attr("value").map(|s| s.to_owned());
 

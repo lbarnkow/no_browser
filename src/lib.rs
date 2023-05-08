@@ -83,9 +83,9 @@
 //! ```
 
 pub mod browser;
-pub mod page;
 pub mod form;
 pub mod input;
+pub mod page;
 
 pub use browser::Browser;
 pub use browser::Result;
