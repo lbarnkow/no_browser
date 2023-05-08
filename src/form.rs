@@ -51,7 +51,7 @@ static BUTTONS: [InputType; 3] = [InputType::Button, InputType::Reset, InputType
 impl Form {
     /// Returns the `id` of this form if it has any.
     pub fn id(&self) -> Option<&str> {
-        self.id.as_ref().map(|s| s.as_str())
+        self.id.as_deref()
     }
 
     /// Returns a shared reference (`Rc<RefCell<>>`) to an input field ([`Input`][Input]) within this form.
@@ -101,7 +101,7 @@ impl Form {
 
     pub(crate) fn parse(form_ref: &ElementRef, page_url: Url) -> Self {
         let form = form_ref.value();
-        let method_s = form.attr("method").or(Some(&"GET")).unwrap();
+        let method_s = form.attr("method").unwrap_or("GET");
         let mut method = Method::from_str(&method_s.to_uppercase()).unwrap_or(Method::GET);
 
         if method != Method::GET && method != Method::POST {
@@ -137,18 +137,18 @@ impl Form {
         let selector = Selector::parse("input").unwrap();
         for input in html.select(&selector) {
             let input = input.value();
-            match Input::parse(&input) {
-                Ok(input) => inputs.push(input),
-                Err(_) => (), // Silently drop input parse errors
+            if let Ok(input) = Input::parse(input) {
+                // Silently drop input parse errors
+                inputs.push(input)
             }
         }
 
         let selector = Selector::parse("button").unwrap();
         for button in html.select(&selector) {
             let button = button.value();
-            match Input::parse(&button) {
-                Ok(button) => inputs.push(button),
-                Err(_) => (), // Silently drop input parse errors
+            if let Ok(button) = Input::parse(button) {
+                // Silently drop input parse errors
+                inputs.push(button)
             }
         }
 
@@ -176,7 +176,7 @@ impl Form {
             self.page_url.port_or_known_default().unwrap(),
         );
 
-        if !self.action.starts_with("/") {
+        if !self.action.starts_with('/') {
             // action relative to the current path; so add current path
             if self.page_url.path().ends_with('/') {
                 // discard trailing slash of current path
@@ -191,7 +191,7 @@ impl Form {
 
         url.push_str(&self.action);
 
-        return url;
+        url
     }
 }
 

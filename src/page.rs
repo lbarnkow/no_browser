@@ -125,12 +125,10 @@ impl Page {
 
     /// Returns the form at index `idx` from the list of forms on this page.
     pub fn form(&self, idx: usize) -> Result<&Form> {
-        self.forms
-            .get(idx)
-            .ok_or_else(|| Error::FormIndexOutOfBoundsError {
-                num_forms: self.forms.len(),
-                idx,
-            })
+        self.forms.get(idx).ok_or(Error::FormIndexOutOfBoundsError {
+            num_forms: self.forms.len(),
+            idx,
+        })
     }
 
     /// Returns the form with the given `id` from the list of forms on this page.
@@ -164,13 +162,12 @@ impl Page {
     pub fn select_first(&self, selectors: &str) -> Result<ElementRef> {
         let s = self.parse_selectors(selectors)?;
 
-        Ok(self
-            .html
+        self.html
             .select(&s)
             .next()
             .ok_or(Error::CssSelectorResultEmptyError {
                 selector: selectors.to_owned(),
-            })?)
+            })
     }
 
     /// Returns all elements matching the given CSS selector group, i.e. a comma-separated list of selectors. See
