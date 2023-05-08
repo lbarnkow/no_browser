@@ -49,7 +49,7 @@ jobs:
         run: |
           sed --in-place "s/version = \"0.0.0\"/version = \"$GITHUB_REF_NAME\"/g" Cargo.toml
           cargo publish --dry-run --allow-dirty
-          cargo package --list
+          cargo package --list --allow-dirty
           cargo publish --allow-dirty
 
       - name: github release
