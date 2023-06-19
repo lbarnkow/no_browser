@@ -71,24 +71,27 @@ impl Form {
         })
     }
 
-    pub(crate) fn submit(&self, submit_button_name: &str) -> Result<SubmitFormInfo> {
+    pub(crate) fn submit(&self, submit_button_name: Option<&str>) -> Result<SubmitFormInfo> {
         let url = self.form_target_url();
         let method = self.method.clone();
 
         let mut data = Vec::new();
 
-        self.input(InputType::Submit, submit_button_name)?;
+        if let Some(submit_button_name) = submit_button_name {
+            let input = self.input(InputType::Submit, submit_button_name)?;
+            let button = input.borrow();
+            data.push((button.name().to_owned(), button.value().unwrap().to_owned()));
+        }
 
         for input in &self.inputs {
             let input = input.borrow();
-            if BUTTONS.contains(&input.t()) && input.name().ne(submit_button_name) {
-                continue; // skip (most) buttons
-            }
 
+            if BUTTONS.contains(&input.t()) {
+                continue; // skip buttons
+            }
             if input.value().is_none() {
                 continue; // skip empty inputs
             }
-
             if input.t() == InputType::Checkbox && input.attr("checked").is_none() {
                 continue; // skip unchecked checkboxes
             }
@@ -245,7 +248,7 @@ mod tests {
 
         let form = Form::parse(&form, Url::parse("https://wikipedia.org/").unwrap());
 
-        let info = form.submit("ok")?;
+        let info = form.submit(Some("ok"))?;
         assert_eq!(info.method, Method::GET);
         assert_eq!(info.url, "https://www.github.com/submit_stuff");
         assert_eq!(info.data.len(), 3);
@@ -264,7 +267,7 @@ mod tests {
             .borrow_mut()
             .set_attr("checked", Some("".to_owned()));
 
-        let info = form.submit("ok")?;
+        let info = form.submit(Some("ok"))?;
         assert_eq!(info.method, Method::GET);
         assert_eq!(info.url, "https://www.github.com/submit_stuff");
         assert_eq!(info.data.len(), 4);
@@ -286,7 +289,7 @@ mod tests {
             .borrow_mut()
             .set_attr("checked", None);
 
-        let info = form.submit("ok")?;
+        let info = form.submit(Some("ok"))?;
         assert_eq!(info.method, Method::GET);
         assert_eq!(info.url, "https://www.github.com/submit_stuff");
         assert_eq!(info.data.len(), 2);

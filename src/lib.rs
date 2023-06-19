@@ -54,7 +54,7 @@
 //!     .set_value(Some("rust programming language".to_owned()));
 //!
 //! // ... and submit
-//! let page = browser.submit_form(search_form, "go")?;
+//! let page = browser.submit_form(search_form, None)?;
 //!
 //! // the new title tag should be "Rust (programming language) - Wikipedia"
 //! assert_eq!(
