@@ -460,7 +460,7 @@ mod tests {
         let b = Browser::builder().finish().unwrap();
 
         let url = format!("http://localhost:{}/", addr.port());
-        let p = b
+        let mut p = b
             .navigate_to(
                 &url,
                 Some(&vec![
@@ -470,9 +470,9 @@ mod tests {
             )
             .unwrap();
 
-        let form = p.form(0).unwrap();
-        let text = form.input(InputType::Text, "text").unwrap();
-        text.borrow_mut().set_value(Some("Testing".to_owned()));
+        let form = p.form_mut(0).unwrap();
+        let text = form.input_mut(InputType::Text, "text").unwrap();
+        text.set_value(Some("Testing".to_owned()));
 
         let p = b.submit_form(form, Some("submit")).unwrap();
 
@@ -500,13 +500,13 @@ mod tests {
 
         let url = format!("http://localhost:{}/", addr.port());
         let action = format!("http://127.0.0.1:{}/absolute/form/submiss.ion", addr.port());
-        let p = b
+        let mut p = b
             .navigate_to(&url, Some(&vec![("action", &action), ("method", "post")]))
             .unwrap();
 
-        let form = p.form(0).unwrap();
-        let text = form.input(InputType::Text, "text").unwrap();
-        text.borrow_mut().set_value(Some("Testing".to_owned()));
+        let form = p.form_mut(0).unwrap();
+        let text = form.input_mut(InputType::Text, "text").unwrap();
+        text.set_value(Some("Testing".to_owned()));
 
         let p = b.submit_form(form, Some("submit")).unwrap();
 

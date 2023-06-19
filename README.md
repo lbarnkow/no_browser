@@ -18,7 +18,7 @@ you want to test modern JavaScript-driven web apps, opt for a crate driving a re
 let browser = Browser::builder().finish()?;
 
 // Lets go to the Wikipedia main page
-let page = browser.navigate_to("https://en.wikipedia.org/", None)?;
+let mut page = browser.navigate_to("https://en.wikipedia.org/", None)?;
 
 // the title tag should be "Wikipedia, the free encyclopedia"
 assert_eq!(
@@ -33,14 +33,13 @@ assert!(page
     .starts_with("Welcome to"));
 
 // fill out the search form ...
-let search_form = page.form_by_id("searchform")?;
+let search_form = page.form_by_id_mut("searchform")?;
 search_form
-    .input(InputType::Search, "search")?
-    .borrow_mut()
+    .input_mut(InputType::Search, "search")?
     .set_value(Some("rust programming language".to_owned()));
 
 // ... and submit
-let page = browser.submit_form(search_form, "go")?;
+let page = browser.submit_form(search_form, None)?;
 
 // the new title tag should be "Rust (programming language) - Wikipedia"
 assert_eq!(
