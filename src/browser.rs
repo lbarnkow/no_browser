@@ -106,7 +106,7 @@ impl Browser {
     /// Uses this [`Browser`][Browser] instance to submit a given `form` using a specific input/button
     /// (`submit_button_name`). Upon success the http response is decoded and used to initialize and return a
     /// [`Page`][Page] instance.
-    pub fn submit_form(&self, form: &Form, submit_button_name: &str) -> Result<Page> {
+    pub fn submit_form(&self, form: &Form, submit_button_name: Option<&str>) -> Result<Page> {
         let info = form.submit(submit_button_name)?;
 
         let rb = if info.method == Method::GET {
@@ -474,7 +474,7 @@ mod tests {
         let text = form.input(InputType::Text, "text").unwrap();
         text.borrow_mut().set_value(Some("Testing".to_owned()));
 
-        let p = b.submit_form(form, "submit").unwrap();
+        let p = b.submit_form(form, Some("submit")).unwrap();
 
         let method = p.select_first("p#method").unwrap();
         assert_eq!(method.inner_html(), "GET");
@@ -508,7 +508,7 @@ mod tests {
         let text = form.input(InputType::Text, "text").unwrap();
         text.borrow_mut().set_value(Some("Testing".to_owned()));
 
-        let p = b.submit_form(form, "submit").unwrap();
+        let p = b.submit_form(form, Some("submit")).unwrap();
 
         let method = p.select_first("p#method").unwrap();
         assert_eq!(method.inner_html(), "POST");
