@@ -32,7 +32,7 @@
 //! let browser = Browser::builder().finish()?;
 //!
 //! // Lets go to the Wikipedia main page
-//! let page = browser.navigate_to("https://en.wikipedia.org/", None)?;
+//! let mut page = browser.navigate_to("https://en.wikipedia.org/", None)?;
 //!
 //! // the title tag should be "Wikipedia, the free encyclopedia"
 //! assert_eq!(
@@ -47,10 +47,9 @@
 //!     .starts_with("Welcome to"));
 //!
 //! // fill out the search form ...
-//! let search_form = page.form_by_id("searchform")?;
+//! let search_form = page.form_by_id_mut("searchform")?;
 //! search_form
-//!     .input(InputType::Search, "search")?
-//!     .borrow_mut()
+//!     .input_mut(InputType::Search, "search")?
 //!     .set_value(Some("rust programming language".to_owned()));
 //!
 //! // ... and submit

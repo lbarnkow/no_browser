@@ -3,7 +3,7 @@
 use crate::input::{Input, InputType};
 use reqwest::{Method, Url};
 use scraper::{ElementRef, Html, Selector};
-use std::{cell::RefCell, rc::Rc, str::FromStr};
+use std::str::FromStr;
 use thiserror::Error;
 
 /// An error occurred while working with the form.
@@ -21,14 +21,12 @@ pub enum Error {
 
 /// Short-hand for `std::result::Result<T, no_browser::form::Error>`.
 pub type Result<T> = std::result::Result<T, Error>;
-/// Short-hand for `Rc<RefCell<no_browser::input::Input>>`.
-pub type InputRef = Rc<RefCell<Input>>;
 
 /// Struct [`Form`][Form] represents a parsed html form.
 ///
 /// It gives access to:
 /// * this forms id (`id()`);
-/// * the individual input fields in this form (`input()`);
+/// * the individual input fields in this form (`input()`, `input_mut()`);
 ///
 /// See the main docs of [crate `no_browser`][crate] for usage examples.
 #[derive(Debug)]
@@ -37,7 +35,7 @@ pub struct Form {
     method: Method,
     action: String,
     id: Option<String>,
-    inputs: Vec<InputRef>,
+    inputs: Vec<Input>,
 }
 
 pub(crate) struct SubmitFormInfo {
@@ -54,15 +52,30 @@ impl Form {
         self.id.as_deref()
     }
 
-    /// Returns a shared reference (`Rc<RefCell<>>`) to an input field ([`Input`][Input]) within this form.
-    pub fn input(&self, t: InputType, name: &str) -> Result<InputRef> {
+    /// Returns a reference to an input field ([`Input`][Input]) within this form.
+    pub fn input(&self, t: InputType, name: &str) -> Result<&Input> {
         for input in &self.inputs {
-            let input_r = input.borrow();
-            if input_r.t() != t || name != input_r.name() {
+            if input.t() != t || name != input.name() {
                 continue;
             }
 
-            return Ok(input.clone());
+            return Ok(input);
+        }
+
+        Err(Error::InputNotInFormError {
+            input_name: name.to_owned(),
+            input_type: t,
+        })
+    }
+
+    /// Returns a mutable reference to an input field ([`Input`][Input]) within this form.
+    pub fn input_mut(&mut self, t: InputType, name: &str) -> Result<&mut Input> {
+        for input in &mut self.inputs {
+            if input.t() != t || name != input.name() {
+                continue;
+            }
+
+            return Ok(input);
         }
 
         Err(Error::InputNotInFormError {
@@ -79,13 +92,10 @@ impl Form {
 
         if let Some(submit_button_name) = submit_button_name {
             let input = self.input(InputType::Submit, submit_button_name)?;
-            let button = input.borrow();
-            data.push((button.name().to_owned(), button.value().unwrap().to_owned()));
+            data.push((input.name().to_owned(), input.value().unwrap().to_owned()));
         }
 
         for input in &self.inputs {
-            let input = input.borrow();
-
             if BUTTONS.contains(&input.t()) {
                 continue; // skip buttons
             }
@@ -117,12 +127,7 @@ impl Form {
             .map(|s| s.to_owned())
             .unwrap();
         let id = form.attr("id").map(|s| s.to_owned());
-
         let inputs = Self::parse_form_inputs(form_ref);
-        let inputs = inputs
-            .into_iter()
-            .map(|input| Rc::new(RefCell::new(input)))
-            .collect();
 
         Self {
             page_url,
@@ -246,7 +251,7 @@ mod tests {
         let selector = Selector::parse("form").unwrap();
         let form = html.select(&selector).into_iter().next().unwrap();
 
-        let form = Form::parse(&form, Url::parse("https://wikipedia.org/").unwrap());
+        let mut form = Form::parse(&form, Url::parse("https://wikipedia.org/").unwrap());
 
         let info = form.submit(Some("ok"))?;
         assert_eq!(info.method, Method::GET);
@@ -263,8 +268,7 @@ mod tests {
             .contains(&("chk_b".to_owned(), "chk_b".to_owned())));
 
         // Check second checkbox
-        form.input(InputType::Checkbox, "chk_b")?
-            .borrow_mut()
+        form.input_mut(InputType::Checkbox, "chk_b")?
             .set_attr("checked", Some("".to_owned()));
 
         let info = form.submit(Some("ok"))?;
@@ -282,11 +286,9 @@ mod tests {
             .contains(&("chk_b".to_owned(), "chk_b".to_owned())));
 
         // uncheck both checkboxes
-        form.input(InputType::Checkbox, "chk_a")?
-            .borrow_mut()
+        form.input_mut(InputType::Checkbox, "chk_a")?
             .set_attr("checked", None);
-        form.input(InputType::Checkbox, "chk_b")?
-            .borrow_mut()
+        form.input_mut(InputType::Checkbox, "chk_b")?
             .set_attr("checked", None);
 
         let info = form.submit(Some("ok"))?;

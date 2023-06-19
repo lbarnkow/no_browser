@@ -123,7 +123,7 @@ impl Page {
         &self.text
     }
 
-    /// Returns the form at index `idx` from the list of forms on this page.
+    /// Returns a reference to the form at index `idx` from the list of forms on this page.
     pub fn form(&self, idx: usize) -> Result<&Form> {
         self.forms.get(idx).ok_or(Error::FormIndexOutOfBoundsError {
             num_forms: self.forms.len(),
@@ -131,9 +131,31 @@ impl Page {
         })
     }
 
-    /// Returns the form with the given `id` from the list of forms on this page.
+    /// Returns a mutable reference to the form at index `idx` from the list of forms on this page.
+    pub fn form_mut(&mut self, idx: usize) -> Result<&mut Form> {
+        let len = self.forms.len();
+        self.forms
+            .get_mut(idx)
+            .ok_or(Error::FormIndexOutOfBoundsError {
+                num_forms: len,
+                idx,
+            })
+    }
+
+    /// Returns a reference to the form with the given `id` from the list of forms on this page.
     pub fn form_by_id(&self, id: &str) -> Result<&Form> {
         for form in &self.forms {
+            if form.id().is_some() && form.id().unwrap() == id {
+                return Ok(form);
+            }
+        }
+
+        Err(Error::FormIdNotFoundError { id: id.to_owned() })
+    }
+
+    /// Returns a mutable reference to the form with the given `id` from the list of forms on this page.
+    pub fn form_by_id_mut(&mut self, id: &str) -> Result<&mut Form> {
+        for form in &mut self.forms {
             if form.id().is_some() && form.id().unwrap() == id {
                 return Ok(form);
             }
@@ -264,7 +286,7 @@ mod tests {
 
         let form = page.form_by_id("id_02").unwrap();
         let hidden = form.input(InputType::Hidden, "hidden").unwrap();
-        assert_eq!(hidden.borrow().name(), "hidden");
-        assert_eq!(hidden.borrow().value(), Some("hidden"));
+        assert_eq!(hidden.name(), "hidden");
+        assert_eq!(hidden.value(), Some("hidden"));
     }
 }
