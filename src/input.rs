@@ -42,7 +42,7 @@ pub type Result<T> = std::result::Result<T, Error>;
 /// The supported html input elements.
 ///
 /// See <https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input>
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum InputType {
     /// see <https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/button> <br/>
     /// See <https://developer.mozilla.org/en-US/docs/Web/HTML/Element/button>
@@ -141,7 +141,7 @@ pub struct Input {
 
 impl Input {
     /// Returns the [`InputType`][InputType] of this input element.
-    pub fn t(&self) -> InputType {
+    pub const fn t(&self) -> InputType {
         self.t
     }
 
@@ -180,7 +180,7 @@ impl Input {
         prev
     }
 
-    pub(crate) fn parse(element: &Element) -> Result<Input> {
+    pub(crate) fn parse(element: &Element) -> Result<Self> {
         let tag_name = element.name().to_lowercase();
 
         match tag_name.as_str() {
@@ -192,7 +192,7 @@ impl Input {
         }
     }
 
-    fn parse_input(element: &Element) -> Result<Input> {
+    fn parse_input(element: &Element) -> Result<Self> {
         let t = element
             .attr("type")
             .ok_or_else(|| Error::MissingAttributeError {
@@ -210,7 +210,7 @@ impl Input {
         Self::parse_element(element, t)
     }
 
-    fn parse_button(element: &Element) -> Result<Input> {
+    fn parse_button(element: &Element) -> Result<Self> {
         let t = element.attr("type").unwrap_or("submit").to_lowercase();
 
         let t = match t.as_str() {
@@ -223,7 +223,7 @@ impl Input {
         Self::parse_element(element, t)
     }
 
-    fn parse_element(element: &Element, t: InputType) -> Result<Input> {
+    fn parse_element(element: &Element, t: InputType) -> Result<Self> {
         let name = element
             .attr("name")
             .ok_or(Error::UnnamedInputError {})?
@@ -235,7 +235,7 @@ impl Input {
             attr.insert(k.to_owned(), v.to_owned());
         }
 
-        Ok(Input {
+        Ok(Self {
             t,
             name,
             value,

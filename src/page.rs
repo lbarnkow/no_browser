@@ -99,22 +99,22 @@ impl Page {
     }
 
     /// Returns the http method used to fetch this page.
-    pub fn method(&self) -> &Method {
+    pub const fn method(&self) -> &Method {
         &self.method
     }
 
     /// Returns the http status code returned with this page.
-    pub fn status(&self) -> &StatusCode {
+    pub const fn status(&self) -> &StatusCode {
         &self.status
     }
 
     /// Returns the response headers returned with this page.
-    pub fn headers(&self) -> &HeaderMap {
+    pub const fn headers(&self) -> &HeaderMap {
         &self.headers
     }
 
     /// Returns the url for this page. Due to server-side redirects this url may be different from the initial request.
-    pub fn url(&self) -> &Url {
+    pub const fn url(&self) -> &Url {
         &self.url
     }
 
@@ -187,7 +187,7 @@ impl Page {
         self.html
             .select(&s)
             .next()
-            .ok_or(Error::CssSelectorResultEmptyError {
+            .ok_or_else(|| Error::CssSelectorResultEmptyError {
                 selector: selectors.to_owned(),
             })
     }
