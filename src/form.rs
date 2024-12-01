@@ -228,7 +228,7 @@ mod tests {
     fn parse_form() -> Result<()> {
         let html = Html::parse_fragment(FORM_001);
         let selector = Selector::parse("form").unwrap();
-        let form = html.select(&selector).into_iter().next().unwrap();
+        let form = html.select(&selector).next().unwrap();
 
         let form = Form::parse(&form, Url::parse("https://wikipedia.org/").unwrap());
 
@@ -249,7 +249,7 @@ mod tests {
     fn submit_checkboxes() -> Result<()> {
         let html = Html::parse_fragment(FORM_001);
         let selector = Selector::parse("form").unwrap();
-        let form = html.select(&selector).into_iter().next().unwrap();
+        let form = html.select(&selector).next().unwrap();
 
         let mut form = Form::parse(&form, Url::parse("https://wikipedia.org/").unwrap());
 

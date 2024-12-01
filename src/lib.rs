@@ -42,7 +42,7 @@
 //!
 //! // the main page should welcome us
 //! assert!(page
-//!     .select_first("h1 > span.mw-headline")?
+//!     .select_first("div.mw-heading > h1")?
 //!     .inner_html()
 //!     .starts_with("Welcome to"));
 //!

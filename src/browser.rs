@@ -83,7 +83,7 @@ pub struct Browser {
 
 impl Browser {
     /// Return a [`BrowserBuilder`][BrowserBuilder] to initialize a [`Browser`][Browser] instance.
-    pub fn builder() -> BrowserBuilder {
+    pub const fn builder() -> BrowserBuilder {
         BrowserBuilder::new()
     }
 
@@ -135,6 +135,7 @@ impl Browser {
 }
 
 /// A builder to initialize a [`Browser`][Browser] instance. It allows tweaking advanced settings for the http client.
+///
 /// Refer to the documentation of the public methods to learn about the available settings and their defaults. Use
 /// `finish()` to get the configured [`Browser`][Browser].
 #[derive(Debug)]
@@ -145,8 +146,8 @@ pub struct BrowserBuilder {
 }
 
 impl BrowserBuilder {
-    fn new() -> Self {
-        BrowserBuilder {
+    const fn new() -> Self {
+        Self {
             cookie_store: true,
             skip_tls_verify: false,
             certs: Vec::new(),
@@ -155,7 +156,7 @@ impl BrowserBuilder {
 
     /// Set whether this [`Browser`][Browser] should have a cookie store and therefore handle cookies. Defaults to
     /// `true`.
-    pub fn cookie_store(mut self, cookie_store: bool) -> Self {
+    pub const fn cookie_store(mut self, cookie_store: bool) -> Self {
         self.cookie_store = cookie_store;
         self
     }
@@ -169,7 +170,7 @@ impl BrowserBuilder {
     /// these proxies act as a man-in-the-middle, decrypting the connection to the target web site to scan for viruses
     /// or malware, while re-encrypting the connection to your client with a custom self-signed certificate. In this
     /// particular scenario it may be useful while prototyping to disable verification and simply trust the connection.
-    pub fn skip_tls_verify(mut self, skip_tls_verify: bool) -> Self {
+    pub const fn skip_tls_verify(mut self, skip_tls_verify: bool) -> Self {
         self.skip_tls_verify = skip_tls_verify;
         self
     }
@@ -281,8 +282,8 @@ mod tests {
                     query_list.push_str(&item);
                 }
 
-                let form_action = query.remove("action").or(Some("form".to_owned())).unwrap();
-                let form_method = query.remove("method").or(Some("get".to_owned())).unwrap();
+                let form_action = query.remove("action").unwrap_or("form".to_owned());
+                let form_method = query.remove("method").unwrap_or("get".to_owned());
                 let form = FORM
                     .replace("{FORM_ACTION}", &form_action)
                     .replace("{FORM_METHOD}", &form_method);
