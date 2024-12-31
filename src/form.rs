@@ -187,13 +187,13 @@ impl Form {
         if !self.action.starts_with('/') {
             // action relative to the current path; so add current path
             if self.page_url.path().ends_with('/') {
-                // discard trailing slash of current path
-                url.push_str(&self.page_url.path()[..self.page_url.path().len() - 1]);
+                url.push_str(&self.page_url.path());
             } else {
-                // discard last page / file
+                // discard last page / file segment
                 let mut path_parts: Vec<&str> = self.page_url.path().split('/').collect();
                 path_parts.pop();
                 url.push_str(&path_parts.join("/"));
+                url.push('/');
             }
         }
 
